@@ -1,0 +1,12 @@
+#
+# whitelist.txt
+#
+# - file for known-good md5 hashes (allowing CounterSploit to return only info about unknown/new files)
+# - lines beginning with # are ignored
+# - first 32 char of line parsed as md5, allowing post-hash comments. ex: ^996c3055506fb18d8afdc25e9e811980 somefile.ext (found in WinXP spX)$
+#
+#Examples:
+#
+#8F078AE4ED187AAABC0A305146DE6716 unverified svchost.exe from WinXP SP?
+#A0732187050030AE399B241436565E64 unverified explorer.exe from WinXP SP?
+

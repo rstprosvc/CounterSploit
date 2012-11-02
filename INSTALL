@@ -1,0 +1,12 @@
+#####################################################
+# ~~~~~~~~~~~[[ installation ]]~~~~~~~~~~~~~~
+1) review/update the configurable variables in countersploit.rb
+2) move/copy the countersploit.rb file to the meterpreter scripts directory (bt5 ex: /opt/metasploit/msf3/scripts/meterpreter/)
+3) create a directory called "countersploit" (no quotes) in your msf user/profile dir (bt5 ex: /root/.msf4/) and move/copy the remaining files there:
+
+root@bt:~# ls /root/.msf4/countersploit/
+audit  bin  c2  etc  INSTALL  lib  README
+root@bt:~# 
+
+4) read the README
+
