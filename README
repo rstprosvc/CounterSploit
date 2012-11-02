@@ -1,0 +1,143 @@
+#####################################################
+# ~~~~~~~~~~~[[ Version ]]~~~~~~~~~~~~~~
+1.0d
+
+#####################################################
+# ~~~~~~~~~~~[[ About ]]~~~~~~~~~~~~~~
+CounterSploit is a series of MSF scripts that provide live-response and triage capabilities to incident responders and investigators (because defenders should get to use MSF too!).  Commercial forensics tools are generally over-engineered towards taking investigations to court, which isn't relevant to 95+% of investigations performed by responders.  Attackers (should) have to fight for shells, but defenders (should) know the vulns and have legitimate access mechanisms, so they should be able to use MSF to their advantage without much difficulty.  The goal of CounterSploit is to leverage the power and capabilities of the MSF platform to allow defenders to rapidly investigate machines in their environment to determine if a compromise has occured. 
+
+#####################################################
+# ~~~~~~~~~~[[ Tested On ]]~~~~~~~~~~~~
+- MetaSploit v4.3.0-dev [core:4.3 api:1.0]
+- BT5R2-Gnome-VM-32 (MSF)
+- Win XP (meterpreter)
+- Win 7 64 (meterpreter)
+
+#####################################################
+# ~~~~~~~~~~~[[ Quick Start ]]~~~~~~~~~~~~~~
+1) Get some shells
+2a) Execute from the meterpreter CLI (only execs on 1 host, but commands can be passed via CLI and/or c2/*.cmd files):
+    meterpreter > run countersploit -h
+    ...
+    meterpreter > run countersploit -c 'fs-list -h'
+    ...
+2b) Execute from the MSF CLI (execs on multiple hosts, but cmds only parsed via c2/*.cmd):
+    msf  exploit(handler) > sessions -s countersploit
+
+#####################################################
+# ~~~~~~~~~~~[[ Notes ]]~~~~~~~~~~~~~~
+1) **WARNING**: When passing path params, use DOS style paths, as the opt parser currently can't handle spaces
+2) Execution without SYSTEM perms will result in sub-optimal performance.  Executing meterpreter as administrator on Win7 will allow escalation to SYSTEM.
+3) CounterSploit includes whitelisting where relevant.  Blacklisting is a losing game.  To utilize whitelisting with CounterSploit, generate MD5 hashes of relevant files from known-good media and put the hashes in etc/whitelist.txt.  When executing a command that performs hashing, the -W flag will read the whitelist file and **OMIT** results matching hashes from the whitelist file.  The goal is to minimize the data-set the responder needs to investigate by only returning results about files we're not sure we trust.
+4) bin/qutty.exe is a quiet version of putty used by the 'monitor' command, and is modified not to alert on new host keys or throw message boxes.
+5) All (?) time values (ie: fs-listing, restore-point) are displayed/processed as UTC/Zulu.  Time-zones and DST are too much of a hassle.
+
+#####################################################
+# ~~~~~~~~~~[[ Usage ]]~~~~~~~~~~~~
+- List CounterSploit help with: "run countersploit -h"
+- List CounterSploit supported commands with: "run countersploit -l"
+- All commands support "-h" for usage and notes (ex: "run countersploit -c 'service-list -h'")
+- Commands generally use MSF tables to store and display gathered data; output is stored in the audit/ directory
+
+#####################################################
+# ~~~~~~~~~~[[ Current Command Set ]]~~~~~~~~~~~~
+   autoruns - push autorunsc.exe and exec for startup items
+   ads-list - Search for Alternate Data Streams
+   driver-list - List system drivers via WMIC, and perform MD5 hashing
+   fs-list - Search the filesystem, stat/hash files, bound results by c/m/a times
+   gather-file - Download a file from a remote system with an MD5 for integrity
+   hash - Perform MD5 hashing on system files
+   isolate - Isolate a target host from other hosts via ARP, IP, and DNS
+   job-list - List scheduled jobs via WMIC
+   monitor - Redirect traffic from a target host through an SSH tunnel to a remote proxy/environment 
+   net-list - List recent network/connection information
+   process-list - List running processes, and perform MD5 hashing
+   process-mem-capture - Download memory segments from a remote host
+   raw-mem-dump - Capture raw memory 
+   registry-capture - Download registry information via the reg command
+   restore-point-list - Enumerate information from restore points / shadow volumes
+   service-list - List running services, and perform MD5 hashing
+   startup-items - List items that exec on startup via WMIC, and perform MD5 hashing
+   system-info - General information about the system and users
+   system-log - Parse the event log of the remote system
+
+#####################################################
+# ~~~~~~~~~~[[ Roadmap ]]~~~~~~~~~~~~
+
+-> General Effectiveness
+---> Parallel execution
+---> Remote WMI exec
+---> Explore event log via powershell for advantages over wmi
+---> All output to CLI (autoruns)
+---> All output to CSV (netinfo, sysinfo?, etc?)
+---> Migration as an option
+
+-> Featureset
+---> Memoryze expansion (hook checks, process list [vs api], etc?)
+
+-> General updates
+----> Solve reading spaces passed as params to commands (so DOS style paths aren't needed)
+----> Clean up variable names (no more camelCase)
+----> Improve/expand whitelisting somehow to allow for weighted findings (seen this 5 diff times, vs seen it once)
+
+-> Updates to system-info
+----> Utilize wmic sysaccount/useraccount for further information on users and groups
+----> Check for users who have previously logged onto the system via the existence of home folders
+----> Domain/workgroup information
+----> Glean further information by analyzing state and contents of user home dirs/files
+
+-> Updates to restore-point-list
+----> Account for files w/ >3 character file extensions when parsing change.log for XP restore-points
+----> Win7 improvements (functionality is spotty; might need to adjust perms on 'System Volume Information' prior to creating symlink; vssadmin works sometimes and not others) (check existing MSF vss foo)
+
+-> Updates to process-mem-capture
+----> Query memory image sizes (possibly via psapi.GetModuleInformation or k32.EnumProcessModules) so the final image is properly sized
+----> Analyze differences of images in memory vs images on disk
+----> Work better on Win 7 (currently unable to capture all images)
+
+-> Updates to isolate
+----> Account for multiple default gateways
+----> Explore dynamically adding a secondary ip to an interface without changing DHCP settings or disrupting existing connectivity (to replace nullIP==Network-ID)
+
+-> Updates to monitor
+----> Explore replacing an SSH tunnel to a proxy w/ a dynamic proxifier to capture all traffic (except MSF; mb complex)
+
+-> Updates to ads-list
+----> Remove ads_dump.exe and exec w/ railgun via QueryStreamInformationFile (b/c FindFirstStreamW/FindNextStreamW only work >= Vista)
+
+
+#####################################################
+# ~~~~~~~~~~[[ License ]]~~~~~~~~~~~~
+Copyright (C) 2012, RST Professional Services, LLC
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+    * Redistributions of source code must retain the above copyright notice,
+          this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above copyright notice,
+          this list of conditions and the following disclaimer in the documentation
+          and/or other materials provided with the distribution.
+
+    * Neither the name of RST Professional Services, LLC nor the names of its contributors
+          may be used to endorse or promote products derived from this software
+          without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+================================================================================
+
+The CounterSploit package is provided under the 3-clause BSD license above.
+
+The copyright on this utility is held by RST Professional Services, LLC.
